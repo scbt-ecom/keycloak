@@ -46,6 +46,8 @@ func NeedRoles(requiredRoles ...string) Middleware {
 				}
 			}
 
+			token, _ = r.Cookie("token")
+
 			roles, err := introspectTokenRoles(token.Value)
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
