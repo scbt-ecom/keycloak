@@ -17,7 +17,7 @@ func NeedRoles(requiredRoles ...string) Middleware {
 				if errors.Is(err, http.ErrNoCookie) {
 					code := r.URL.Query().Get("code")
 					if code == "" {
-						http.Redirect(w, r, generateCodeURL(fmt.Sprintf("%s://%s%s", r.URL.Scheme, r.Host, r.URL.Path)), http.StatusFound)
+						http.Redirect(w, r, generateCodeURL(fmt.Sprintf("https://%s%s", r.Host, r.URL.Path)), http.StatusFound)
 						return
 					} else {
 						req, err := createGetTokenRequest(code, r.URL.Query().Get("redirect_uri"))
