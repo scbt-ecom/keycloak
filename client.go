@@ -3,7 +3,6 @@ package keycloak
 import (
 	"fmt"
 	"net/http"
-	"net/url"
 )
 
 type Client struct {
@@ -21,7 +20,5 @@ func NewClient(baseURL string, clientID string, realm string, scope string) {
 }
 
 func generateCodeURL(redirectURL string) string {
-	encodedRedirectURL := url.QueryEscape(redirectURL)
-
 	return fmt.Sprintf("%sauth/realms/%s/protocol/openid-connect/auth?client_id=%s&redirect_uri=%s&response_type=code&scope=%s", keycloakClient.BaseURL, keycloakClient.Realm, keycloakClient.ClientID, encodedRedirectURL, keycloakClient.Scope)
 }
