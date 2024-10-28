@@ -20,5 +20,5 @@ func NewClient(baseURL string, clientID string, realm string, scope string) {
 }
 
 func generateCodeURL(redirectURL string) string {
-	return fmt.Sprintf("%sauth/realms/%s/protocol/openid-connect/auth?client_id=%s&redirect_uri=%s&response_type=code&scope=%s", keycloakClient.BaseURL, keycloakClient.Realm, keycloakClient.ClientID, encodedRedirectURL, keycloakClient.Scope)
+	return fmt.Sprintf("%sauth/realms/%s/protocol/openid-connect/auth?client_id=%s&redirect_uri=%s&response_type=code&scope=%s", keycloakClient.BaseURL, keycloakClient.Realm, keycloakClient.ClientID, redirectURL, keycloakClient.Scope)
 }
