@@ -18,6 +18,7 @@ func NeedRoles(requiredRoles ...string) Middleware {
 					code := r.URL.Query().Get("code")
 					if code == "" {
 						w.Header().Set("Referrer-Policy", "strict-origin")
+						w.Header().Set("Content-Type", "text/html")
 						http.Redirect(w, r, generateCodeURL(fmt.Sprintf("https://%s", r.Host)), http.StatusFound)
 						return
 					} else {
