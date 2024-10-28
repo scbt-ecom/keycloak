@@ -17,6 +17,7 @@ func NeedRoles(requiredRoles ...string) Middleware {
 				if errors.Is(err, http.ErrNoCookie) {
 					code := r.URL.Query().Get("code")
 					if code == "" {
+						w.Header().Set("Referrer-Policy", "no-referrer-when-downgrade")
 						http.Redirect(w, r, generateCodeURL(fmt.Sprintf("https://%s", r.Host)), http.StatusFound)
 						return
 					} else {
