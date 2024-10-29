@@ -18,25 +18,27 @@ func MuxNeedRoles(requiredRoles ...string) mux.MiddlewareFunc {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			token, ok := isHaveAccessToken(r)
 			if !ok {
-				redirectURL, err := ensureRedirectURL(r)
-				if err != nil {
-					w.WriteHeader(http.StatusInternalServerError)
-					w.Write(beatifyError(err))
-					return
-				}
+				//redirectURL, err := ensureRedirectURL(r)
+				//if err != nil {
+				//	w.WriteHeader(http.StatusInternalServerError)
+				//	w.Write(beatifyError(err))
+				//	return
+				//}
 
 				code, ok := isHaveQueryCode(r)
 				if !ok {
-					http.Redirect(w, r, generateCodeURL(redirectURL), http.StatusFound)
+					http.Redirect(w, r, generateCodeURL(keycloakClient.RedirectURL), http.StatusFound)
 					return
 				}
 
-				token, err = doTokenRequest(code, redirectURL)
+				accessToken, err := doTokenRequest(code)
 				if err != nil {
 					w.WriteHeader(http.StatusInternalServerError)
 					w.Write(beatifyError(err))
 					return
 				}
+
+				token = accessToken
 			}
 
 			userRoles, err := introspectTokenRoles(token)
@@ -70,14 +72,14 @@ var (
 	errStatusNotOK        = errors.New("external resource response status not OK")
 )
 
-func doTokenRequest(code, redirectURL string) (string, error) {
+func doTokenRequest(code string) (string, error) {
 	tokenURL := fmt.Sprintf("%sauth/realms/%s/protocol/openid-connect/token", keycloakClient.BaseURL, keycloakClient.Realm)
 
 	data := url.Values{
 		"grant_type":   {"authorization_code"},
 		"client_id":    {keycloakClient.ClientID},
 		"code":         {code},
-		"redirect_uri": {redirectURL},
+		"redirect_uri": {keycloakClient.RedirectURL},
 	}
 
 	req, err := http.NewRequest(http.MethodPost, tokenURL, strings.NewReader(data.Encode()))
@@ -114,18 +116,11 @@ func doTokenRequest(code, redirectURL string) (string, error) {
 	return tokenResponse.AccessToken, nil
 }
 
-func ensureRedirectURL(req *http.Request) (string, error) {
-	u, err := url.Parse(req.URL.Host)
-	if err != nil {
-		return "", err
-	}
-
-	if u.Scheme == "" {
-		u.Scheme = defaultScheme
-	}
-
-	return u.String(), nil
-}
+//func ensureRedirectURL(req *http.Request) (string, error) {
+//	fullURL := fmt.Sprintf("%s://%s%s", req.URL.Scheme, req.Host, req.URL.Path)
+//
+//	return fullURL, nil
+//}
 
 func isHaveRole(userRoles []string, requiredRoles []string) bool {
 	for _, userRole := range userRoles {

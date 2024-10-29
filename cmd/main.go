@@ -13,6 +13,7 @@ func main() {
 		"web-ecom",
 		"office",
 		"openid",
+		"https://test-ecom-internal-enricher-k8s.sovcombank.group",
 	)
 
 	needRoles := keycloak.MuxNeedRoles("ecom-k8s")
