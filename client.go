@@ -1,8 +1,8 @@
 package keycloak
 
 import (
-	"fmt"
 	"net/http"
+	"time"
 )
 
 type Client struct {
@@ -10,15 +10,22 @@ type Client struct {
 	ClientID string
 	Realm    string
 	Scope    string
-	*http.Client
+	cl       *http.Client
 }
 
 var keycloakClient Client
 
 func NewClient(baseURL string, clientID string, realm string, scope string) {
-	keycloakClient = Client{BaseURL: baseURL, ClientID: clientID, Realm: realm, Scope: scope, Client: http.DefaultClient}
-}
-
-func generateCodeURL(redirectURL string) string {
-	return fmt.Sprintf("%sauth/realms/%s/protocol/openid-connect/auth?client_id=%s&redirect_uri=%s&response_type=code&scope=%s", keycloakClient.BaseURL, keycloakClient.Realm, keycloakClient.ClientID, redirectURL, keycloakClient.Scope)
+	keycloakClient = Client{
+		BaseURL:  baseURL,
+		ClientID: clientID,
+		Realm:    realm,
+		Scope:    scope,
+		cl: &http.Client{
+			Timeout: time.Second * 10,
+			Transport: &http.Transport{
+				Proxy: nil,
+			},
+		},
+	}
 }
