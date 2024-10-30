@@ -137,13 +137,13 @@ func isHaveRole(userRoles []string, requiredRoles []string) bool {
 func MuxNeedRoles(requiredRoles ...string) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			token, err := r.Cookie("access_token")
-			if err != nil {
+			accessToken, have := isHaveAccessToken(r)
+			if !have {
 				http.Redirect(w, r, generateCodeURL(keycloakClient.RedirectURL), http.StatusMovedPermanently)
 				return
 			}
 
-			userRoles, err := introspectTokenRoles(token.Value)
+			userRoles, err := introspectTokenRoles(accessToken)
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
 				w.Write(beatifyError(err))
@@ -154,6 +154,8 @@ func MuxNeedRoles(requiredRoles ...string) mux.MiddlewareFunc {
 				w.WriteHeader(http.StatusForbidden)
 				return
 			}
+
+			next.ServeHTTP(w, r)
 		})
 	}
 }
