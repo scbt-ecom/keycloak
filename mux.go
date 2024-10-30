@@ -13,7 +13,7 @@ import (
 
 const defaultScheme = "http"
 
-func MuxNeedRoles(requiredRoles ...string) mux.MiddlewareFunc {
+func dasdas(requiredRoles ...string) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			token, ok := isHaveAccessToken(r)
@@ -132,4 +132,36 @@ func isHaveRole(userRoles []string, requiredRoles []string) bool {
 	}
 
 	return false
+}
+
+func MuxNeedRoles(requiredRoles ...string) mux.MiddlewareFunc {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			token, err := r.Cookie("access_token")
+			if err != nil {
+				http.Redirect(w, r, generateCodeURL(keycloakClient.RedirectURL), http.StatusMovedPermanently)
+				return
+			}
+
+			userRoles, err := introspectTokenRoles(token.Value)
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write(beatifyError(err))
+				return
+			}
+
+			if !isHaveRole(userRoles, requiredRoles) {
+				w.WriteHeader(http.StatusForbidden)
+				return
+			}
+		})
+	}
+}
+
+func MuxAuthHandlerFunc(w http.ResponseWriter, r *http.Request) {
+	code, ok := isHaveQueryCode(r)
+	if !ok {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(beatifyError(e))
+	}
 }
