@@ -159,9 +159,25 @@ func MuxNeedRoles(requiredRoles ...string) mux.MiddlewareFunc {
 }
 
 func MuxAuthHandlerFunc(w http.ResponseWriter, r *http.Request) {
-	code, ok := isHaveQueryCode(r)
-	if !ok {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write(beatifyError(e))
+	code, have := isHaveQueryCode(r)
+	if !have {
+		http.Redirect(w, r, generateCodeURL(keycloakClient.RedirectURL), http.StatusFound)
+		return
 	}
+
+	accessToken, err := doTokenRequest(code)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(beatifyError(err))
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "access_token",
+		Value:    accessToken,
+		Path:     "/",
+		HttpOnly: true,
+	})
+
+	http.Redirect(w, r, "/", http.StatusMovedPermanently)
 }
