@@ -2,69 +2,88 @@ package keycloak
 
 import (
 	"encoding/json"
+	"errors"
+	"github.com/gorilla/mux"
+	"net/http"
 )
 
-//type Middleware func(http.HandlerFunc) http.HandlerFunc
-//
-//func NeedRoles(requiredRoles ...string) Middleware {
-//	return func(next http.HandlerFunc) http.HandlerFunc {
-//		return func(w http.ResponseWriter, r *http.Request) {
-//			token, err := r.Cookie("token")
-//			if err != nil {
-//				if errors.Is(err, http.ErrNoCookie) {
-//					code := r.URL.Query().Get("code")
-//					if code == "" {
-//						http.Redirect(w, r, generateCodeURL(fmt.Sprintf("https://%s", r.Host)), http.StatusMovedPermanently)
-//						return
-//					} else {
-//						req, err := createGetTokenRequest(code, r.URL.Query().Get("redirect_uri"))
-//						if err != nil {
-//							w.WriteHeader(http.StatusInternalServerError)
-//							w.Write(beatifyError(err))
-//							return
-//						}
-//
-//						accessToken, err := DoTokenRequest(req)
-//						if err != nil {
-//							w.WriteHeader(http.StatusInternalServerError)
-//							w.Write(beatifyError(err))
-//							return
-//						}
-//
-//						http.SetCookie(w, &http.Cookie{
-//							Name:  "token",
-//							Value: accessToken,
-//							Path:  "/",
-//						})
-//					}
-//				} else {
-//					w.WriteHeader(http.StatusInternalServerError)
-//					w.Write(beatifyError(err))
-//					return
-//				}
+func AuthHandlerFunc(w http.ResponseWriter, r *http.Request) {
+	code, have := isHaveQueryCode(r)
+	if !have {
+		http.Redirect(w, r, generateCodeURL(keycloakClient.RedirectURL), http.StatusFound)
+		return
+	}
+
+	tokenData, err := doTokenRequest(&tokenRequestData{
+		requestType: "client",
+		code:        code,
+	})
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(beatifyError(err))
+		return
+	}
+
+	setupCookie(w, tokenData)
+
+	http.Redirect(w, r, "/", http.StatusMovedPermanently)
+}
+
+var (
+	errSomethingWentWrong = errors.New("something went wrong")
+	errStatusNotOK        = errors.New("external resource response status not OK")
+	errInvalidRequest     = errors.New("invalid request type, contact with developer")
+)
+
+func NeedRole(requiredRoles ...string) mux.MiddlewareFunc {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			accessToken, have := isHaveAccessToken(r)
+			if !have {
+				http.Redirect(w, r, generateCodeURL(keycloakClient.RedirectURL), http.StatusMovedPermanently)
+				return
+			}
+
+			userRoles, err := introspectTokenRoles(accessToken)
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write(beatifyError(err))
+				return
+			}
+
+			if !isHaveRole(userRoles, requiredRoles) {
+				w.WriteHeader(http.StatusForbidden)
+				return
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+//func MuxNeedAllRoles(requiredRoles ...string) mux.MiddlewareFunc {
+//	return func(next http.Handler) http.Handler {
+//		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+//			accessToken, have := isHaveAccessToken(r)
+//			if !have {
+//				http.Redirect(w, r, generateCodeURL(keycloakClient.RedirectURL), http.StatusMovedPermanently)
+//				return
 //			}
 //
-//			token, _ = r.Cookie("token")
-//
-//			roles, err := introspectTokenRoles(token.Value)
+//			userRoles, err := introspectTokenRoles(accessToken)
 //			if err != nil {
 //				w.WriteHeader(http.StatusInternalServerError)
 //				w.Write(beatifyError(err))
 //				return
 //			}
 //
-//			for _, requiredRole := range requiredRoles {
-//				for _, role := range roles {
-//					if role == requiredRole {
-//						next(w, r)
-//						return
-//					}
-//				}
+//			if !isHaveAllRoles(userRoles, requiredRoles) {
+//				w.WriteHeader(http.StatusForbidden)
+//				return
 //			}
 //
-//			w.WriteHeader(http.StatusForbidden)
-//			return
-//		}
+//			next.ServeHTTP(w, r)
+//		})
 //	}
 //}
 
