@@ -10,6 +10,9 @@ import (
 func AuthHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	code, have := isHaveQueryCode(r)
 	if !have {
+		w.Header().Set("Access-Control-Allow-Origin", "https://test-ecom-internal-enricher-k8s.sovcombank.group")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		http.Redirect(w, r, generateCodeURL(keycloakClient.RedirectURL), http.StatusFound)
 		return
 	}
@@ -40,6 +43,9 @@ func NeedRole(requiredRoles ...string) mux.MiddlewareFunc {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			accessToken, have := isHaveAccessToken(r)
 			if !have {
+				w.Header().Set("Access-Control-Allow-Origin", "https://test-ecom-internal-enricher-k8s.sovcombank.group")
+				w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+				w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 				http.Redirect(w, r, generateCodeURL(keycloakClient.RedirectURL), http.StatusMovedPermanently)
 				return
 			}
