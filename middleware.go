@@ -1,13 +1,17 @@
 package keycloak
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"github.com/gorilla/mux"
 	"github.com/scbt-ecom/slogging"
 	"log/slog"
 	"net/http"
+	"os"
+)
+
+var (
+	errNetworkAccess = errors.New("problem with network access")
 )
 
 func AuthHandlerFunc(w http.ResponseWriter, r *http.Request) {
@@ -27,9 +31,9 @@ func AuthHandlerFunc(w http.ResponseWriter, r *http.Request) {
 		slog.Info("error while token request",
 			slogging.ErrAttr(err))
 
-		if errors.Is(err, context.DeadlineExceeded) {
+		if os.IsTimeout(err) {
 			w.WriteHeader(http.StatusGatewayTimeout)
-			w.Write(beatifyError(err))
+			w.Write(beatifyError(errNetworkAccess))
 			return
 		}
 
