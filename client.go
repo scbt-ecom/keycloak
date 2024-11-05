@@ -16,7 +16,13 @@ type Client struct {
 
 var keycloakClient Client
 
-func NewClient(baseURL string, clientID string, realm string, scope string, redirectURL string) {
+func NewClient(
+	baseURL string,
+	clientID string,
+	realm string,
+	scope string,
+	redirectURL string,
+) {
 	keycloakClient = Client{
 		BaseURL:     baseURL,
 		ClientID:    clientID,
@@ -24,7 +30,7 @@ func NewClient(baseURL string, clientID string, realm string, scope string, redi
 		Scope:       scope,
 		RedirectURL: redirectURL,
 		cl: &http.Client{
-			Timeout: time.Second * 180,
+			Timeout: time.Second * 30,
 		},
 	}
 }
