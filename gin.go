@@ -5,6 +5,8 @@ import (
 	"net/http"
 )
 
+func sad(w *http.ResponseWriter, r *http.Request) {}
+
 func GinAuthHandlerFunc(c *gin.Context) {
 	code, have := isHaveQueryCode(c.Request)
 	if !have {
