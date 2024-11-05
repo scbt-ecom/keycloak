@@ -74,7 +74,13 @@ func doTokenRequest(reqData *tokenRequestData) (*tokenResponseData, error) {
 	req.Header.Set("Accept", "application/json")
 
 	slog.Info("keycloak token request",
-		slogging.AnyAttr("request", &req))
+		slogging.AnyAttr("request1", req),
+		slogging.AnyAttr("request2", &req),
+		slogging.AnyAttr("request3", fmt.Sprintf("%+v", req)),
+		slogging.AnyAttr("request4", fmt.Sprintf("%v", req)),
+		slogging.AnyAttr("request5", fmt.Sprintf("%+v", &req)),
+		slogging.AnyAttr("request6", fmt.Sprintf("%v", &req)),
+	)
 
 	resp, err := keycloakClient.cl.Do(req)
 	if err != nil {

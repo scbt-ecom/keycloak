@@ -24,7 +24,7 @@ func NewClient(baseURL string, clientID string, realm string, scope string, redi
 		Scope:       scope,
 		RedirectURL: redirectURL,
 		cl: &http.Client{
-			Timeout: time.Second * 20,
+			Timeout: time.Second * 180,
 		},
 	}
 }
