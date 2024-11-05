@@ -85,10 +85,11 @@ func doTokenRequest(reqData *tokenRequestData) (*tokenResponseData, error) {
 	)
 
 	slog.Info("keycloak token request",
+		slogging.StringAttr("request11", fmt.Sprintf("%+v", *req)),
+		slogging.StringAttr("request12", fmt.Sprintf("%v", *req)),
+
 		slogging.StringAttr("request7", fmt.Sprintf("%+v", req)),
 		slogging.StringAttr("request8", fmt.Sprintf("%v", req)),
-		slogging.StringAttr("request9", fmt.Sprintf("%+v", &req)),
-		slogging.StringAttr("request10", fmt.Sprintf("%v", &req)),
 	)
 
 	resp, err := keycloakClient.cl.Do(req)
