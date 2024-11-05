@@ -17,33 +17,37 @@ var (
 func AuthHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	code, have := isHaveQueryCode(r)
 	if !have {
-		slog.Info("dont have query code",
-			slogging.StringAttr("url", r.URL.String()))
+		slog.Info("redirect to authorization page",
+			slogging.StringAttr("url", r.URL.String()),
+		)
+
 		http.Redirect(w, r, generateCodeURL(keycloakClient.RedirectURL), http.StatusFound)
 		return
 	}
 
+	slog.Info("starting token request")
 	tokenData, err := doTokenRequest(&tokenRequestData{
 		requestType: "client",
 		code:        code,
 	})
 	if err != nil {
-		slog.Info("error while token request",
-			slogging.ErrAttr(err))
-
 		if os.IsTimeout(err) {
+			slog.Info("keycloak token request timed out")
 			w.WriteHeader(http.StatusGatewayTimeout)
 			w.Write(beatifyError(errNetworkAccess))
 			return
 		}
 
+		slog.Info("keycloak token request failed with error",
+			slogging.ErrAttr(err))
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write(beatifyError(err))
 		return
 	}
+	slog.Info("token request succeeded")
 
 	setupCookie(w, tokenData)
-	slog.Info("successfully setup cookie")
+	slog.Info("successfully setup cookie from keycloak response")
 
 	http.Redirect(w, r, "/", http.StatusMovedPermanently)
 	slog.Info("successfully redirect to /")

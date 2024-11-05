@@ -73,24 +73,8 @@ func doTokenRequest(reqData *tokenRequestData) (*tokenResponseData, error) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("Accept", "application/json")
 
-	slog.Info("keycloak token request started now")
-
 	slog.Info("keycloak token request",
-		slogging.AnyAttr("request1", req),
-		slogging.AnyAttr("request2", &req),
-		slogging.AnyAttr("request3", fmt.Sprintf("%+v", req)),
-		slogging.AnyAttr("request4", fmt.Sprintf("%v", req)),
-		slogging.AnyAttr("request5", fmt.Sprintf("%+v", &req)),
-		slogging.AnyAttr("request6", fmt.Sprintf("%v", &req)),
-	)
-
-	slog.Info("keycloak token request",
-		slogging.StringAttr("request11", fmt.Sprintf("%+v", *req)),
-		slogging.StringAttr("request12", fmt.Sprintf("%v", *req)),
-
-		slogging.StringAttr("request7", fmt.Sprintf("%+v", req)),
-		slogging.StringAttr("request8", fmt.Sprintf("%v", req)),
-	)
+		slogging.StringAttr("request", fmt.Sprintf("%+v", req)))
 
 	resp, err := keycloakClient.cl.Do(req)
 	if err != nil {
@@ -99,8 +83,9 @@ func doTokenRequest(reqData *tokenRequestData) (*tokenResponseData, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
+
 	slog.Info("keycloak token response",
-		slogging.AnyAttr("response", &resp))
+		slogging.StringAttr("response", fmt.Sprintf("%+v", *resp)))
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, errStatusNotOK
