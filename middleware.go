@@ -1,6 +1,7 @@
 package keycloak
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"github.com/gorilla/mux"
@@ -25,6 +26,13 @@ func AuthHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		slog.Info("error while token request",
 			slogging.ErrAttr(err))
+
+		if errors.Is(err, context.DeadlineExceeded) {
+			w.WriteHeader(http.StatusGatewayTimeout)
+			w.Write(beatifyError(err))
+			return
+		}
+
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write(beatifyError(err))
 		return
