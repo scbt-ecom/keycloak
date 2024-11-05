@@ -4,12 +4,16 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/gorilla/mux"
+	"github.com/scbt-ecom/slogging"
+	"log/slog"
 	"net/http"
 )
 
 func AuthHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	code, have := isHaveQueryCode(r)
 	if !have {
+		slog.Info("dont have query code",
+			slogging.StringAttr("url", r.URL.String()))
 		http.Redirect(w, r, generateCodeURL(keycloakClient.RedirectURL), http.StatusFound)
 		return
 	}
@@ -19,14 +23,18 @@ func AuthHandlerFunc(w http.ResponseWriter, r *http.Request) {
 		code:        code,
 	})
 	if err != nil {
+		slog.Info("error while token request",
+			slogging.ErrAttr(err))
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write(beatifyError(err))
 		return
 	}
 
 	setupCookie(w, tokenData)
+	slog.Info("successfully setup cookie")
 
 	http.Redirect(w, r, "/", http.StatusMovedPermanently)
+	slog.Info("successfully redirect to /")
 }
 
 var (
