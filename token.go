@@ -73,6 +73,8 @@ func doTokenRequest(reqData *tokenRequestData) (*tokenResponseData, error) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("Accept", "application/json")
 
+	slog.Info("keycloak token request started now")
+
 	slog.Info("keycloak token request",
 		slogging.AnyAttr("request1", req),
 		slogging.AnyAttr("request2", &req),
