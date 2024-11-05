@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/scbt-ecom/slogging"
 	"github.com/tidwall/gjson"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"strings"
@@ -69,12 +71,20 @@ func doTokenRequest(reqData *tokenRequestData) (*tokenResponseData, error) {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Accept", "application/json")
+
+	slog.Info("keycloak token request",
+		slogging.AnyAttr("request", &req))
 
 	resp, err := keycloakClient.cl.Do(req)
 	if err != nil {
+		slog.Error("keycloak token request failed",
+			slogging.ErrAttr(err))
 		return nil, err
 	}
 	defer resp.Body.Close()
+	slog.Info("keycloak token response",
+		slogging.AnyAttr("response", &resp))
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, errStatusNotOK
@@ -82,6 +92,8 @@ func doTokenRequest(reqData *tokenRequestData) (*tokenResponseData, error) {
 
 	bb, err := io.ReadAll(resp.Body)
 	if err != nil {
+		slog.Error("keycloak token response reading failed",
+			slogging.StringAttr("response", string(bb)))
 		return nil, err
 	}
 
