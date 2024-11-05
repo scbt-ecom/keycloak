@@ -8,7 +8,7 @@ import (
 func GinAuthHandlerFunc(c *gin.Context) {
 	code, have := isHaveQueryCode(c.Request)
 	if !have {
-		c.Redirect(http.StatusFound, generateCodeURL(keycloakClient.RedirectURL))
+		c.Redirect(http.StatusFound, generateCodeURL(cl.RedirectURL))
 		return
 	}
 
@@ -30,7 +30,7 @@ func GinNeedRole(requiredRoles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		accessToken, have := isHaveAccessToken(c.Request)
 		if !have {
-			c.Redirect(http.StatusMovedPermanently, generateCodeURL(keycloakClient.RedirectURL))
+			c.Redirect(http.StatusMovedPermanently, generateCodeURL(cl.RedirectURL))
 			return
 		}
 

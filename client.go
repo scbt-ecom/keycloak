@@ -14,21 +14,25 @@ type Client struct {
 	cl          *http.Client
 }
 
-var keycloakClient Client
+type Config struct {
+	BaseURL     string
+	ClientID    string
+	Realm       string
+	Scope       string
+	RedirectURL string
+}
+
+var cl Client
 
 func NewClient(
-	baseURL string,
-	clientID string,
-	realm string,
-	scope string,
-	redirectURL string,
+	cfg Config,
 ) {
-	keycloakClient = Client{
-		BaseURL:     baseURL,
-		ClientID:    clientID,
-		Realm:       realm,
-		Scope:       scope,
-		RedirectURL: redirectURL,
+	cl = Client{
+		BaseURL:     cfg.BaseURL,
+		ClientID:    cfg.ClientID,
+		Realm:       cfg.Realm,
+		Scope:       cfg.Scope,
+		RedirectURL: cfg.RedirectURL,
 		cl: &http.Client{
 			Timeout: time.Second * 30,
 		},

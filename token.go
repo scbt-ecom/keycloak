@@ -50,9 +50,9 @@ func doTokenRequest(reqData *tokenRequestData) (*tokenResponseData, error) {
 	case "client":
 		data = url.Values{
 			"grant_type":   {"authorization_code"},
-			"client_id":    {keycloakClient.ClientID},
+			"client_id":    {cl.ClientID},
 			"code":         {reqData.code},
-			"redirect_uri": {keycloakClient.RedirectURL},
+			"redirect_uri": {cl.RedirectURL},
 		}
 	case "server":
 		data = url.Values{
@@ -64,7 +64,7 @@ func doTokenRequest(reqData *tokenRequestData) (*tokenResponseData, error) {
 		return nil, errInvalidRequest
 	}
 
-	tokenURL := fmt.Sprintf("%sauth/realms/%s/protocol/openid-connect/token", keycloakClient.BaseURL, keycloakClient.Realm)
+	tokenURL := fmt.Sprintf("%sauth/realms/%s/protocol/openid-connect/token", cl.BaseURL, cl.Realm)
 
 	req, err := http.NewRequest(http.MethodPost, tokenURL, strings.NewReader(data.Encode()))
 	if err != nil {
@@ -76,7 +76,7 @@ func doTokenRequest(reqData *tokenRequestData) (*tokenResponseData, error) {
 	slog.Info("keycloak token request",
 		slogging.StringAttr("request", fmt.Sprintf("%+v", req)))
 
-	resp, err := keycloakClient.cl.Do(req)
+	resp, err := cl.cl.Do(req)
 	if err != nil {
 		slog.Error("keycloak token request failed",
 			slogging.ErrAttr(err))
@@ -117,7 +117,7 @@ func introspectTokenRoles(token string) ([]string, error) {
 		return nil, err
 	}
 
-	result := gjson.GetBytes(payload, fmt.Sprintf("resource_access.%s.roles", keycloakClient.ClientID))
+	result := gjson.GetBytes(payload, fmt.Sprintf("resource_access.%s.roles", cl.ClientID))
 
 	roles, ok := result.Value().([]string)
 	if !ok {

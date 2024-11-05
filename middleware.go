@@ -21,7 +21,7 @@ func AuthHandlerFunc(w http.ResponseWriter, r *http.Request) {
 			slogging.StringAttr("url", r.URL.String()),
 		)
 
-		http.Redirect(w, r, generateCodeURL(keycloakClient.RedirectURL), http.StatusFound)
+		http.Redirect(w, r, generateCodeURL(cl.RedirectURL), http.StatusFound)
 		return
 	}
 
@@ -64,7 +64,7 @@ func NeedRole(requiredRoles ...string) mux.MiddlewareFunc {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			accessToken, have := isHaveAccessToken(r)
 			if !have {
-				http.Redirect(w, r, generateCodeURL(keycloakClient.RedirectURL), http.StatusMovedPermanently)
+				http.Redirect(w, r, generateCodeURL(cl.RedirectURL), http.StatusMovedPermanently)
 				return
 			}
 
