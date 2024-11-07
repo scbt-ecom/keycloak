@@ -26,7 +26,7 @@ type tokenResponseData struct {
 	RefreshToken     string `json:"refresh_token"`
 	TokenType        string `json:"token_type"`
 	IDToken          string `json:"id_token"`
-	NotBeforePolicy  string `json:"not-before-policy"`
+	NotBeforePolicy  int    `json:"not-before-policy"`
 	SessionState     string `json:"session_state"`
 	Scope            string `json:"scope"`
 }
@@ -76,6 +76,7 @@ func doTokenRequest(reqData *tokenRequestData) (*tokenResponseData, error) {
 	slog.Info("keycloak token request",
 		slogging.StringAttr("request", fmt.Sprintf("%+v", req)))
 
+	// TODO: rename http.Client
 	resp, err := cl.cl.Do(req)
 	if err != nil {
 		slog.Error("keycloak token request failed",
