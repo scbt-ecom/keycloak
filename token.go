@@ -113,18 +113,26 @@ func doTokenRequest(reqData *tokenRequestData) (*tokenResponseData, error) {
 }
 
 func introspectTokenRoles(token string) ([]string, error) {
-	b64data := token[strings.IndexByte(token, ',')+1:]
+	parts := strings.Split(token, ".")
+	if len(parts) != 3 {
+		return nil, errInvalidToken
+	}
 
-	payload, err := base64.RawURLEncoding.DecodeString(b64data)
+	payload, err := base64.RawURLEncoding.DecodeString(parts[1])
 	if err != nil {
 		return nil, err
 	}
 
 	result := gjson.GetBytes(payload, fmt.Sprintf("resource_access.%s.roles", cl.ClientID))
 
-	roles, ok := result.Value().([]string)
-	if !ok {
-		return nil, errInvalidKeycloakConfig
+	roles := make([]string, 0)
+	if result.IsArray() {
+		result.ForEach(func(_, value gjson.Result) bool {
+			roles = append(roles, value.String())
+			return true
+		})
+	} else {
+		return nil, errors.New("roles not found in token")
 	}
 
 	return roles, nil
