@@ -113,7 +113,9 @@ func doTokenRequest(reqData *tokenRequestData) (*tokenResponseData, error) {
 }
 
 func introspectTokenRoles(token string) ([]string, error) {
-	payload, err := base64.RawURLEncoding.DecodeString(token)
+	b64data := token[strings.IndexByte(token, ',')+1:]
+
+	payload, err := base64.RawURLEncoding.DecodeString(b64data)
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,6 @@
 # Getting #
 ```
-go get github.com/scbt-ecom/keycloak@v1.2.14
+go get github.com/scbt-ecom/keycloak@v1.2.15
 ```
 
 # Usage #
