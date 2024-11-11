@@ -52,7 +52,7 @@ func GinNeedRole(requiredRoles ...string) gin.HandlerFunc {
 		accessToken, have := isHaveAccessToken(c.Request)
 		if !have {
 			slog.Info("user have no access token in cookie")
-			c.Redirect(http.StatusMovedPermanently, generateCodeURL(cl.RedirectURL))
+			c.Status(http.StatusForbidden)
 			return
 		}
 
@@ -65,13 +65,10 @@ func GinNeedRole(requiredRoles ...string) gin.HandlerFunc {
 		}
 
 		if !isHaveRole(userRoles, requiredRoles) {
-			slog.Error("user dont have one of roles",
-				slogging.ErrAttr(err))
+			slog.Error("user dont have one of roles")
 			c.Status(http.StatusForbidden)
 			return
 		}
-
-		slog.Info("user has role, authorization successful")
 
 		c.Next()
 	}

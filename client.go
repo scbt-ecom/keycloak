@@ -9,7 +9,6 @@ type Client struct {
 	BaseURL     string
 	ClientID    string
 	Realm       string
-	Scope       string
 	RedirectURL string
 	cl          *http.Client
 }
@@ -18,7 +17,6 @@ type Config struct {
 	BaseURL     string
 	ClientID    string
 	Realm       string
-	Scope       string
 	RedirectURL string
 }
 
@@ -31,7 +29,6 @@ func NewClient(
 		BaseURL:     cfg.BaseURL,
 		ClientID:    cfg.ClientID,
 		Realm:       cfg.Realm,
-		Scope:       cfg.Scope,
 		RedirectURL: cfg.RedirectURL,
 		cl: &http.Client{
 			Timeout: time.Second * 30,

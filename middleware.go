@@ -64,18 +64,22 @@ func NeedRole(requiredRoles ...string) mux.MiddlewareFunc {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			accessToken, have := isHaveAccessToken(r)
 			if !have {
-				http.Redirect(w, r, generateCodeURL(cl.RedirectURL), http.StatusMovedPermanently)
+				slog.Info("user have no access token in cookie")
+				w.WriteHeader(http.StatusForbidden)
 				return
 			}
 
 			userRoles, err := introspectTokenRoles(accessToken)
 			if err != nil {
+				slog.Error("failed to get user roles",
+					slogging.ErrAttr(err))
 				w.WriteHeader(http.StatusInternalServerError)
 				w.Write(beatifyError(err))
 				return
 			}
 
 			if !isHaveRole(userRoles, requiredRoles) {
+				slog.Error("user dont have one of roles")
 				w.WriteHeader(http.StatusForbidden)
 				return
 			}
