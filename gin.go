@@ -8,8 +8,6 @@ import (
 	"os"
 )
 
-func sad(w *http.ResponseWriter, r *http.Request) {}
-
 func GinAuthHandlerFunc(c *gin.Context) {
 	code, have := isHaveQueryCode(c.Request)
 	if !have {
@@ -74,6 +72,7 @@ func GinNeedRole(requiredRoles ...string) gin.HandlerFunc {
 		}
 
 		slog.Info("user has role, authorization successful")
+
 		c.Next()
 	}
 }

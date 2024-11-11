@@ -3,10 +3,20 @@ package keycloak
 import (
 	"fmt"
 	"net/http"
+	"time"
 )
 
 func isHaveAccessToken(req *http.Request) (string, bool) {
 	token, err := req.Cookie("access_token")
+	if err != nil {
+		return "", false
+	}
+
+	return token.Value, true
+}
+
+func isHaveRefreshToken(req *http.Request) (string, bool) {
+	token, err := req.Cookie("refresh_token")
 	if err != nil {
 		return "", false
 	}
@@ -28,14 +38,16 @@ func setupCookie(w http.ResponseWriter, tokenData *tokenResponseData) {
 		Name:     "access_token",
 		Value:    tokenData.AccessToken,
 		Path:     "/",
-		HttpOnly: true,
+		HttpOnly: false,
+		Expires:  time.Now().Add(time.Duration(tokenData.ExpiresIn) * time.Second),
 	})
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     "refresh_token",
 		Value:    tokenData.RefreshToken,
 		Path:     "/",
-		HttpOnly: true,
+		HttpOnly: false,
+		Expires:  time.Now().Add(time.Duration(tokenData.RefreshExpiresIn) * time.Second),
 	})
 }
 
