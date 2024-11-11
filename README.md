@@ -14,7 +14,6 @@ keycloak.NewClient(keycloak.Config{
 		BaseURL:     "https://keycloak-int-test.sovcombank.group/",
 		ClientID:    "web-ecom",
 		Realm:       "office",
-		Scope:       "openid",
 		RedirectURL: "https://test-ecom-internal-enricher-k8s.sovcombank.group/auth",
 	})
 ```
