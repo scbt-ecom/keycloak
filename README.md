@@ -30,9 +30,9 @@ keycloak.NewClient(keycloak.Config{
 ### Client ###
 #### Native ####
 ```
-http.HandleFunc("/auth", AuthHandlerFunc)
+http.HandleFunc("/auth", keycloak.AuthHandlerFunc)
 
-enricherRoles := NeedRole("exampleRole1", "exampleRole2")
+enricherRoles := keycloak.NeedRole("exampleRole1", "exampleRole2")
 http.Handle("/rules", enricherRoles(http.HandlerFunc(sad)))
 
 http.ListenAndServe(":8080", nil)
@@ -40,22 +40,22 @@ http.ListenAndServe(":8080", nil)
 #### Mux ####
 ```
 r := mux.NewRouter()
-r.HandleFunc("/auth", AuthHandlerFunc)
+r.HandleFunc("/auth", keycloak.AuthHandlerFunc)
 
 rules := r.Path("/rules").Subrouter()
 rules.Handle("/", ruleGetExampleHandler)
 
-rules.Use(NeedRole("exampleRole1", "exampleRole2"))
+rules.Use(keycloak.NeedRole("exampleRole1", "exampleRole2"))
 ```
 #### Gin ####
 ```
 r := gin.Default()
-r.Handle(http.MethodGet, "/auth", GinAuthHandlerFunc)
+r.Handle(http.MethodGet, "/auth", keycloak.GinAuthHandlerFunc)
 
 rules := r.Group("/rules")
 rules.Handle(http.MethodGet, "/", ruleGetExampleHandler)
 
-rules.Use(GinNeedRole("exampleRole1", "exampleRole2"))
+rules.Use(keycloak.GinNeedRole("exampleRole1", "exampleRole2"))
 ```
 ### Server ###
 ```
