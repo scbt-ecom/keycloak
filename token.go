@@ -112,6 +112,22 @@ func doTokenRequest(reqData *tokenRequestData) (*tokenResponseData, error) {
 	return &tokenData, nil
 }
 
+func extractUsername(token string) (string, error) {
+	parts := strings.Split(token, ".")
+	if len(parts) != 3 {
+		return "", errInvalidToken
+	}
+
+	payload, err := base64.RawURLEncoding.DecodeString(parts[1])
+	if err != nil {
+		return "", err
+	}
+
+	username := gjson.GetBytes(payload, "preferred_username").String()
+
+	return username, nil
+}
+
 func introspectTokenRoles(token string) ([]string, error) {
 	parts := strings.Split(token, ".")
 	if len(parts) != 3 {

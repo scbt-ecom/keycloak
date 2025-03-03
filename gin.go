@@ -1,6 +1,7 @@
 package keycloak
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/scbt-ecom/slogging"
 	"log/slog"
@@ -64,12 +65,21 @@ func GinNeedRole(requiredRoles ...string) gin.HandlerFunc {
 			return
 		}
 
+		username, err := extractUsername(accessToken)
+		if err != nil {
+			slog.Error("failed to get username",
+				slogging.ErrAttr(err))
+			c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
+
 		if !isHaveRole(userRoles, requiredRoles) {
 			slog.Error("user dont have one of roles")
 			c.Status(http.StatusForbidden)
 			return
 		}
 
+		c.Request = c.Request.WithContext(context.WithValue(c, "username", username))
 		c.Next()
 	}
 }

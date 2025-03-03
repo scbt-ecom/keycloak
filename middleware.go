@@ -1,6 +1,7 @@
 package keycloak
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"github.com/gorilla/mux"
@@ -81,13 +82,22 @@ func NeedRoleDirectRedirect(requiredRoles ...string) mux.MiddlewareFunc {
 				return
 			}
 
+			username, err := extractUsername(accessToken)
+			if err != nil {
+				slog.Error("failed to get username",
+					slogging.ErrAttr(err))
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write(beatifyError(err))
+				return
+			}
+
 			if !isHaveRole(userRoles, requiredRoles) {
 				slog.Error("user dont have one of roles")
 				w.WriteHeader(http.StatusForbidden)
 				return
 			}
 
-			next.ServeHTTP(w, r)
+			next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), "username", username)))
 		})
 	}
 }
@@ -111,13 +121,22 @@ func NeedRole(requiredRoles ...string) mux.MiddlewareFunc {
 				return
 			}
 
+			username, err := extractUsername(accessToken)
+			if err != nil {
+				slog.Error("failed to get username",
+					slogging.ErrAttr(err))
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write(beatifyError(err))
+				return
+			}
+
 			if !isHaveRole(userRoles, requiredRoles) {
 				slog.Error("user dont have one of roles")
 				w.WriteHeader(http.StatusForbidden)
 				return
 			}
 
-			next.ServeHTTP(w, r)
+			next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), "username", username)))
 		})
 	}
 }
