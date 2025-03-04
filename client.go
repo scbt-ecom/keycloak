@@ -26,10 +26,10 @@ func NewClient(
 	cfg Config,
 ) {
 	cl = Client{
-		BaseURL:     cfg.BaseURL,
+		BaseURL:     fixURL(cfg.BaseURL),
 		ClientID:    cfg.ClientID,
 		Realm:       cfg.Realm,
-		RedirectURL: cfg.RedirectURL,
+		RedirectURL: fixURL(cfg.RedirectURL),
 		cl: &http.Client{
 			Timeout: time.Second * 30,
 		},

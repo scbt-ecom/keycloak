@@ -77,5 +77,5 @@ func isHaveRole(userRoles []string, requiredRoles []string) bool {
 //}
 
 func generateCodeURL(redirectURL string) string {
-	return fmt.Sprintf("%sauth/realms/%s/protocol/openid-connect/auth?client_id=%s&redirect_uri=%s&response_type=code&scope=openid", cl.BaseURL, cl.Realm, cl.ClientID, redirectURL)
+	return fmt.Sprintf("%s/auth/realms/%s/protocol/openid-connect/auth?client_id=%s&redirect_uri=%s&response_type=code&scope=openid", cl.BaseURL, cl.Realm, cl.ClientID, redirectURL)
 }
