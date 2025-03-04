@@ -64,7 +64,7 @@ func doTokenRequest(reqData *tokenRequestData) (*tokenResponseData, error) {
 		return nil, errInvalidRequest
 	}
 
-	tokenURL := fmt.Sprintf("%sauth/realms/%s/protocol/openid-connect/token", cl.BaseURL, cl.Realm)
+	tokenURL := fmt.Sprintf("%s/auth/realms/%s/protocol/openid-connect/token", cl.BaseURL, cl.Realm)
 
 	req, err := http.NewRequest(http.MethodPost, tokenURL, strings.NewReader(data.Encode()))
 	if err != nil {
