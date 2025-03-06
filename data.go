@@ -7,13 +7,18 @@ import (
 )
 
 func isHaveAccessToken(req *http.Request) (string, bool) {
-	token, err := req.Cookie("access_token")
-	if err != nil {
+		if cookie, err := req.Cookie("access_token"); err == nil {
+			return cookie.Value, true
+		}
+		authHeader := req.Header.Get("Authorization")
+		if authHeader != "" {
+			if strings.HasPrefix(authHeader, "Bearer ") {
+				token := strings.TrimPrefix(authHeader, "Bearer ")
+				return token, true
+			}
+		}
 		return "", false
 	}
-
-	return token.Value, true
-}
 
 func isHaveRefreshToken(req *http.Request) (string, bool) {
 	token, err := req.Cookie("refresh_token")
