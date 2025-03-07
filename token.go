@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/scbt-ecom/slogging"
-	"github.com/tidwall/gjson"
 	"io"
 	"log/slog"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/scbt-ecom/slogging"
+	"github.com/tidwall/gjson"
 )
 
 var (

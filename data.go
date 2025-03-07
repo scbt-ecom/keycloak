@@ -3,22 +3,23 @@ package keycloak
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 )
 
 func isHaveAccessToken(req *http.Request) (string, bool) {
-		if cookie, err := req.Cookie("access_token"); err == nil {
-			return cookie.Value, true
-		}
-		authHeader := req.Header.Get("Authorization")
-		if authHeader != "" {
-			if strings.HasPrefix(authHeader, "Bearer ") {
-				token := strings.TrimPrefix(authHeader, "Bearer ")
-				return token, true
-			}
-		}
-		return "", false
+	if cookie, err := req.Cookie("access_token"); err == nil {
+		return cookie.Value, true
 	}
+	authHeader := req.Header.Get("Authorization")
+	if authHeader != "" {
+		if strings.HasPrefix(authHeader, "Bearer ") {
+			token := strings.TrimPrefix(authHeader, "Bearer ")
+			return token, true
+		}
+	}
+	return "", false
+}
 
 func isHaveRefreshToken(req *http.Request) (string, bool) {
 	token, err := req.Cookie("refresh_token")

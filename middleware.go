@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/gorilla/mux"
-	"github.com/scbt-ecom/slogging"
 	"log/slog"
 	"net/http"
 	"os"
+
+	"github.com/gorilla/mux"
+	"github.com/scbt-ecom/slogging"
 )
 
 var (

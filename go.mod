@@ -2,7 +2,12 @@ module github.com/scbt-ecom/keycloak
 
 go 1.22
 
-require github.com/tidwall/gjson v1.18.0
+require (
+	github.com/gin-gonic/gin v1.10.0
+	github.com/gorilla/mux v1.8.1
+	github.com/scbt-ecom/slogging v0.0.2
+	github.com/tidwall/gjson v1.18.0
+)
 
 require (
 	github.com/Graylog2/go-gelf v0.0.0-20170811154226-7ebf4f536d8f // indirect
@@ -12,12 +17,10 @@ require (
 	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
-	github.com/gin-gonic/gin v1.10.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.20.0 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
-	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.7 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
@@ -30,7 +33,6 @@ require (
 	github.com/samber/slog-common v0.17.0 // indirect
 	github.com/samber/slog-graylog/v2 v2.7.0 // indirect
 	github.com/samber/slog-multi v1.2.1 // indirect
-	github.com/scbt-ecom/slogging v0.0.2 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect

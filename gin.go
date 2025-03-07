@@ -2,11 +2,12 @@ package keycloak
 
 import (
 	"context"
-	"github.com/gin-gonic/gin"
-	"github.com/scbt-ecom/slogging"
 	"log/slog"
 	"net/http"
 	"os"
+
+	"github.com/gin-gonic/gin"
+	"github.com/scbt-ecom/slogging"
 )
 
 func GinAuthHandlerFunc(c *gin.Context) {
