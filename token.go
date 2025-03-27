@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-
+	"time"
 	"github.com/scbt-ecom/slogging"
 	"github.com/tidwall/gjson"
 )
@@ -129,6 +129,30 @@ func extractUsername(token string) (string, error) {
 	return username, nil
 }
 
+func extractExpTime(token string) (time.Time, error) {
+	parts := strings.Split(token, ".")
+	if len(parts) != 3 {
+		return time.Time{}, errInvalidToken
+	}
+
+	payload, err := base64.RawURLEncoding.DecodeString(parts[1])
+	if err != nil {
+		return time.Time{}, fmt.Errorf("failed to decode payload: %v", err)
+	}
+
+	var claims map[string]interface{}
+	if err := json.Unmarshal(payload, &claims); err != nil {
+		return time.Time{}, fmt.Errorf("failed to parse payload: %v", err)
+	}
+
+	exp, ok := claims["exp"].(float64) 
+	if !ok {
+		return time.Time{}, errors.New("exp claim is missing or invalid")
+	}
+
+	return time.Unix(int64(exp), 0), nil
+}
+
 func introspectTokenRoles(token string) ([]string, error) {
 	parts := strings.Split(token, ".")
 	if len(parts) != 3 {
@@ -154,3 +178,16 @@ func introspectTokenRoles(token string) ([]string, error) {
 
 	return roles, nil
 }
+
+func IsTokenExpired(token string) (bool, error){
+	expTime, err := extractExpTime(token)
+	if err != nil {
+		return true, err
+	}
+	if time.Now().After(expTime) {
+		return true, nil
+	} else {
+		return false, nil
+	}
+}
+
