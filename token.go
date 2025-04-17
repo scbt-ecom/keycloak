@@ -5,14 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/scbt-ecom/slogging"
+	"github.com/tidwall/gjson"
 	"io"
 	"log/slog"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
-	"github.com/scbt-ecom/slogging"
-	"github.com/tidwall/gjson"
 )
 
 var (
@@ -44,7 +44,7 @@ type tokenRequestData struct {
 	clientSecret string
 }
 
-func doTokenRequest(reqData *tokenRequestData) (*tokenResponseData, error) {
+func doTokenRequest(reqData *tokenRequestData, cl *Client) (*tokenResponseData, error) {
 	data := url.Values{}
 
 	switch reqData.requestType {
@@ -145,7 +145,7 @@ func extractExpTime(token string) (time.Time, error) {
 		return time.Time{}, fmt.Errorf("failed to parse payload: %v", err)
 	}
 
-	exp, ok := claims["exp"].(float64) 
+	exp, ok := claims["exp"].(float64)
 	if !ok {
 		return time.Time{}, errors.New("exp claim is missing or invalid")
 	}
@@ -153,7 +153,7 @@ func extractExpTime(token string) (time.Time, error) {
 	return time.Unix(int64(exp), 0), nil
 }
 
-func introspectTokenRoles(token string) ([]string, error) {
+func introspectTokenRoles(token, clientID string) ([]string, error) {
 	parts := strings.Split(token, ".")
 	if len(parts) != 3 {
 		return nil, errInvalidToken
@@ -164,7 +164,7 @@ func introspectTokenRoles(token string) ([]string, error) {
 		return nil, err
 	}
 
-	result := gjson.GetBytes(payload, fmt.Sprintf("resource_access.%s.roles", cl.ClientID))
+	result := gjson.GetBytes(payload, fmt.Sprintf("resource_access.%s.roles", clientID))
 
 	roles := make([]string, 0)
 	if result.IsArray() {
@@ -179,7 +179,7 @@ func introspectTokenRoles(token string) ([]string, error) {
 	return roles, nil
 }
 
-func IsTokenExpired(token string) (bool, error){
+func IsTokenExpired(token string) (bool, error) {
 	expTime, err := extractExpTime(token)
 	if err != nil {
 		return true, err
@@ -190,4 +190,3 @@ func IsTokenExpired(token string) (bool, error){
 		return false, nil
 	}
 }
-

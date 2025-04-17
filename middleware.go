@@ -2,7 +2,6 @@ package keycloak
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"log/slog"
 	"net/http"
@@ -16,14 +15,14 @@ var (
 	errNetworkAccess = errors.New("problem with network access")
 )
 
-func AuthHandlerFunc(w http.ResponseWriter, r *http.Request) {
+func (cl *Client) AuthHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	code, have := isHaveQueryCode(r)
 	if !have {
 		slog.Info("redirect to authorization page",
 			slogging.StringAttr("url", r.URL.String()),
 		)
 
-		http.Redirect(w, r, generateCodeURL(cl.RedirectURL), http.StatusFound)
+		http.Redirect(w, r, generateCodeURL(cl), http.StatusFound)
 		return
 	}
 
@@ -31,19 +30,17 @@ func AuthHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	tokenData, err := doTokenRequest(&tokenRequestData{
 		requestType: "client",
 		code:        code,
-	})
+	}, cl)
 	if err != nil {
 		if os.IsTimeout(err) {
 			slog.Info("keycloak token request timed out")
-			w.WriteHeader(http.StatusGatewayTimeout)
-			w.Write(beatifyError(errNetworkAccess))
+			sendError(w, http.StatusGatewayTimeout, errNetworkAccess)
 			return
 		}
 
 		slog.Info("keycloak token request failed with error",
 			slogging.ErrAttr(err))
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write(beatifyError(err))
+		sendError(w, http.StatusInternalServerError, err)
 		return
 	}
 	slog.Info("token request succeeded")
@@ -59,9 +56,10 @@ var (
 	errSomethingWentWrong = errors.New("something went wrong")
 	errStatusNotOK        = errors.New("external resource response status not OK")
 	errInvalidRequest     = errors.New("invalid request type, contact with developer")
+	errNoRoles            = errors.New("user dont have one of roles")
 )
 
-func NeedRoleDirectRedirect(requiredRoles ...string) mux.MiddlewareFunc {
+func (cl *Client) NeedRoleDirectRedirect(requiredRoles ...string) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			accessToken, have := isHaveAccessToken(r)
@@ -70,16 +68,15 @@ func NeedRoleDirectRedirect(requiredRoles ...string) mux.MiddlewareFunc {
 					slogging.StringAttr("url", r.URL.String()),
 				)
 
-				http.Redirect(w, r, generateCodeURL(cl.RedirectURL), http.StatusFound)
+				http.Redirect(w, r, generateCodeURL(cl), http.StatusFound)
 				return
 			}
 
-			userRoles, err := introspectTokenRoles(accessToken)
+			userRoles, err := introspectTokenRoles(accessToken, cl.ClientID)
 			if err != nil {
 				slog.Error("failed to get user roles",
 					slogging.ErrAttr(err))
-				w.WriteHeader(http.StatusInternalServerError)
-				w.Write(beatifyError(err))
+				sendError(w, http.StatusInternalServerError, err)
 				return
 			}
 
@@ -87,14 +84,13 @@ func NeedRoleDirectRedirect(requiredRoles ...string) mux.MiddlewareFunc {
 			if err != nil {
 				slog.Error("failed to get username",
 					slogging.ErrAttr(err))
-				w.WriteHeader(http.StatusInternalServerError)
-				w.Write(beatifyError(err))
+				sendError(w, http.StatusInternalServerError, err)
 				return
 			}
 
 			if !isHaveRole(userRoles, requiredRoles) {
 				slog.Error("user dont have one of roles")
-				w.WriteHeader(http.StatusForbidden)
+				sendError(w, http.StatusForbidden, errNoRoles)
 				return
 			}
 
@@ -103,22 +99,20 @@ func NeedRoleDirectRedirect(requiredRoles ...string) mux.MiddlewareFunc {
 	}
 }
 
-func NeedRole(requiredRoles ...string) mux.MiddlewareFunc {
+func (cl *Client) NeedRole(requiredRoles ...string) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			accessToken, have := isHaveAccessToken(r)
 			if !have {
-				slog.Info("user have no access token in cookie")
-				w.WriteHeader(http.StatusForbidden)
+				sendError(w, http.StatusForbidden, errors.New("user has no access token in cookie"))
 				return
 			}
 
-			userRoles, err := introspectTokenRoles(accessToken)
+			userRoles, err := introspectTokenRoles(accessToken, cl.ClientID)
 			if err != nil {
 				slog.Error("failed to get user roles",
 					slogging.ErrAttr(err))
-				w.WriteHeader(http.StatusInternalServerError)
-				w.Write(beatifyError(err))
+				sendError(w, http.StatusInternalServerError, err)
 				return
 			}
 
@@ -126,14 +120,12 @@ func NeedRole(requiredRoles ...string) mux.MiddlewareFunc {
 			if err != nil {
 				slog.Error("failed to get username",
 					slogging.ErrAttr(err))
-				w.WriteHeader(http.StatusInternalServerError)
-				w.Write(beatifyError(err))
+				sendError(w, http.StatusInternalServerError, err)
 				return
 			}
 
 			if !isHaveRole(userRoles, requiredRoles) {
-				slog.Error("user dont have one of roles")
-				w.WriteHeader(http.StatusForbidden)
+				sendError(w, http.StatusForbidden, errNoRoles)
 				return
 			}
 
@@ -154,7 +146,7 @@ func NeedRole(requiredRoles ...string) mux.MiddlewareFunc {
 //			userRoles, err := introspectTokenRoles(accessToken)
 //			if err != nil {
 //				w.WriteHeader(http.StatusInternalServerError)
-//				w.Write(beatifyError(err))
+//				w.Write(beautifyError(err))
 //				return
 //			}
 //
@@ -167,12 +159,3 @@ func NeedRole(requiredRoles ...string) mux.MiddlewareFunc {
 //		})
 //	}
 //}
-
-func beatifyError(err error) []byte {
-	errMessage := map[string]string{
-		"error": err.Error(),
-	}
-
-	data, _ := json.Marshal(errMessage)
-	return data
-}

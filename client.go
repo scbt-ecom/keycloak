@@ -20,12 +20,8 @@ type Config struct {
 	RedirectURL string
 }
 
-var cl Client
-
-func NewClient(
-	cfg Config,
-) {
-	cl = Client{
+func NewClient(cfg Config) Client {
+	return Client{
 		BaseURL:     fixURL(cfg.BaseURL),
 		ClientID:    cfg.ClientID,
 		Realm:       cfg.Realm,

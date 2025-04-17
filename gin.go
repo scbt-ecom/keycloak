@@ -10,21 +10,21 @@ import (
 	"github.com/scbt-ecom/slogging"
 )
 
-func GinAuthHandlerFunc(c *gin.Context) {
+func (cl *Client) GinAuthHandlerFunc(c *gin.Context) {
 	code, have := isHaveQueryCode(c.Request)
 	if !have {
 		slog.Info("redirect to authorization page",
 			slogging.StringAttr("url", c.Request.URL.String()),
 		)
 
-		c.Redirect(http.StatusFound, generateCodeURL(cl.RedirectURL))
+		c.Redirect(http.StatusFound, generateCodeURL(cl))
 		return
 	}
 
 	tokenData, err := doTokenRequest(&tokenRequestData{
 		requestType: "client",
 		code:        code,
-	})
+	}, cl)
 	if err != nil {
 		if os.IsTimeout(err) {
 			slog.Info("keycloak token request timed out")
@@ -49,7 +49,7 @@ func GinAuthHandlerFunc(c *gin.Context) {
 	slog.Info("successfully redirect to /")
 }
 
-func GinNeedRole(requiredRoles ...string) gin.HandlerFunc {
+func (cl *Client) GinNeedRole(requiredRoles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		accessToken, have := isHaveAccessToken(c.Request)
 		if !have {
@@ -58,7 +58,7 @@ func GinNeedRole(requiredRoles ...string) gin.HandlerFunc {
 			return
 		}
 
-		userRoles, err := introspectTokenRoles(accessToken)
+		userRoles, err := introspectTokenRoles(accessToken, cl.ClientID)
 		if err != nil {
 			slog.Error("failed to get user roles",
 				slogging.ErrAttr(err))

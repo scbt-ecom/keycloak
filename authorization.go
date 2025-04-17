@@ -10,12 +10,12 @@ type AuthData struct {
 	RefreshToken string
 }
 
-func AuthWithCredentials(creds Credentials) (*AuthData, error) {
+func (cl *Client) AuthWithCredentials(creds Credentials) (*AuthData, error) {
 	tokenData, err := doTokenRequest(&tokenRequestData{
 		requestType:  "server",
 		clientID:     creds.ClientID,
 		clientSecret: creds.ClientSecret,
-	})
+	}, cl)
 	if err != nil {
 		return nil, err
 	}
