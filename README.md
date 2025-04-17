@@ -8,7 +8,7 @@ go get github.com/scbt-ecom/keycloak@v1.9.21
 ## Initialize ##
 
 ### Client ###
-This is example values. The keylock should be initialized where it will be used or passed as a function parameter. 
+This is example values. The keycloak should be initialized where it will be used or passed as a function parameter. 
 ```
 keycloakClient := keycloak.NewClient(keycloak.Config{
 		BaseURL:     "https://keycloak-int-test.sovcombank.group/",
@@ -71,7 +71,7 @@ if err != nil {
 ```
 
 ### TokenClient ###
-It should be used if you only need token authentication from another server (not global keylock from environment variables).
+It should be used if you only need token authentication from another server (not global keycloak from environment variables).
 For example, for systems like api2api.  
 ```
 r := mux.NewRouter()
