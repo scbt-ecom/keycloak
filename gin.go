@@ -53,30 +53,34 @@ func (cl *Client) GinNeedRole(requiredRoles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		accessToken, have := isHaveAccessToken(c.Request)
 		if !have {
-			slog.Info("user have no access token in cookie")
-			c.Status(http.StatusForbidden)
+			slogging.L(c.Request.Context()).Warn("user have no access token in cookie",
+				slogging.StringAttr("url", c.Request.URL.String()))
+			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
 
 		userRoles, err := introspectTokenRoles(accessToken, cl.ClientID)
 		if err != nil {
-			slog.Error("failed to get user roles",
-				slogging.ErrAttr(err))
-			c.AbortWithError(http.StatusInternalServerError, err)
+			slogging.L(c.Request.Context()).Warn("failed to get user roles",
+				slogging.ErrAttr(err),
+			)
+			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
 
 		username, err := extractUsername(accessToken)
 		if err != nil {
-			slog.Error("failed to get username",
+			slogging.L(c.Request.Context()).Warn("failed to extract username",
 				slogging.ErrAttr(err))
-			c.AbortWithError(http.StatusInternalServerError, err)
+			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
 
 		if !isHaveRole(userRoles, requiredRoles) {
-			slog.Error("user dont have one of roles")
-			c.Status(http.StatusForbidden)
+			slogging.L(c.Request.Context()).Warn("user does not have required role",
+				slogging.AnyAttr("required_roles", requiredRoles),
+				slogging.AnyAttr("user_roles", userRoles))
+			c.AbortWithStatus(http.StatusForbidden)
 			return
 		}
 
