@@ -74,9 +74,6 @@ func doTokenRequest(reqData *tokenRequestData, cl *Client) (*tokenResponseData, 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("Accept", "application/json")
 
-	slog.Info("keycloak token request",
-		slogging.StringAttr("request", fmt.Sprintf("%+v", req)))
-
 	// TODO: rename http.Client
 	resp, err := cl.cl.Do(req)
 	if err != nil {
@@ -85,9 +82,6 @@ func doTokenRequest(reqData *tokenRequestData, cl *Client) (*tokenResponseData, 
 		return nil, err
 	}
 	defer resp.Body.Close()
-
-	slog.Info("keycloak token response",
-		slogging.StringAttr("response", fmt.Sprintf("%+v", *resp)))
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, errStatusNotOK
