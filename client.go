@@ -27,7 +27,8 @@ func NewClient(cfg Config) Client {
 		Realm:       cfg.Realm,
 		RedirectURL: fixURL(cfg.RedirectURL),
 		cl: &http.Client{
-			Timeout: time.Second * 30,
+			Timeout:   time.Second * 30,
+			Transport: &http.Transport{},
 		},
 	}
 }
