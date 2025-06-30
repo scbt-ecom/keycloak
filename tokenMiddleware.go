@@ -13,7 +13,8 @@ import (
 
 const userKey string = "user"
 
-func NeedTokenRole(requiredRoles ...string) mux.MiddlewareFunc {
+// This middleware is used with the token that comes in the Authorization header
+func (cl *Client) NeedTokenRole(requiredRoles ...string) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			tokenStr, err := jwt.ParseHeader(r.Header, "Authorization", jwt.WithVerify(false), jwt.WithValidate(false))
