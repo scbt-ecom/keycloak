@@ -58,6 +58,10 @@ func setupCookie(w http.ResponseWriter, tokenData *tokenResponseData) {
 }
 
 func isHaveRole(userRoles []string, requiredRoles []string) bool {
+	if requiredRoles == nil {
+		return true
+	}
+
 	for _, userRole := range userRoles {
 		for _, requiredRole := range requiredRoles {
 			if userRole == requiredRole {
