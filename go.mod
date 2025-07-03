@@ -1,4 +1,4 @@
-module github.com/scbt-ecom/keycloak
+module github.com/scbt-ecom/keycloak/v2
 
 go 1.22
 
