@@ -62,7 +62,7 @@ var (
 func (cl *Client) NeedRoleDirectRedirect(requiredRoles ...string) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if requiredRoles == nil {
+			if len(requiredRoles) == 0 {
 				next.ServeHTTP(w, r)
 				return
 			}
@@ -107,7 +107,7 @@ func (cl *Client) NeedRoleDirectRedirect(requiredRoles ...string) mux.Middleware
 func (cl *Client) NeedRole(requiredRoles ...string) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if requiredRoles == nil {
+			if len(requiredRoles) == 0 {
 				next.ServeHTTP(w, r)
 				return
 			}
