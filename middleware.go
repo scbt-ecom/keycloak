@@ -62,6 +62,11 @@ var (
 func (cl *Client) NeedRoleDirectRedirect(requiredRoles ...string) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if requiredRoles == nil {
+				next.ServeHTTP(w, r)
+				return
+			}
+
 			accessToken, have := isHaveAccessToken(r)
 			if !have {
 				slog.Info("redirect to authorization page",
@@ -102,6 +107,11 @@ func (cl *Client) NeedRoleDirectRedirect(requiredRoles ...string) mux.Middleware
 func (cl *Client) NeedRole(requiredRoles ...string) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if requiredRoles == nil {
+				next.ServeHTTP(w, r)
+				return
+			}
+
 			accessToken, have := isHaveAccessToken(r)
 			if !have {
 				sendError(w, http.StatusForbidden, errors.New("user has no access token in cookie"))

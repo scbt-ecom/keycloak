@@ -51,6 +51,11 @@ func (cl *Client) GinAuthHandlerFunc(c *gin.Context) {
 
 func (cl *Client) GinNeedRole(requiredRoles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		if requiredRoles == nil {
+			c.Next()
+			return
+		}
+
 		accessToken, have := isHaveAccessToken(c.Request)
 		if !have {
 			slogging.L(c.Request.Context()).Warn("user have no access token in cookie",
