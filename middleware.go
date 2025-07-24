@@ -3,6 +3,7 @@ package keycloak
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -116,6 +117,34 @@ func (cl *Client) NeedRole(requiredRoles ...string) mux.MiddlewareFunc {
 			if !have {
 				sendError(w, http.StatusForbidden, errors.New("user has no access token in cookie"))
 				return
+			}
+
+			expired, err := IsTokenExpired(accessToken)
+			if err != nil {
+				slog.Error("failed to get token expired",
+					slogging.ErrAttr(err))
+				http.Redirect(w, r, cl.RedirectURL, http.StatusFound)
+				return
+			}
+
+			if expired {
+				refreshToken, haveRefresh := isHaveRefreshToken(r)
+				if haveRefresh {
+					tokenData, err := cl.RefreshToken(refreshToken)
+					if err == nil {
+						setupCookie(w, tokenData)
+						accessToken = tokenData.AccessToken
+						expired = false
+					} else {
+						slog.Error("failed to refresh token", slogging.ErrAttr(err))
+					}
+				}
+
+				if expired {
+					tokenURL := fmt.Sprintf("%s/auth/realms/%s/protocol/openid-connect/token", cl.BaseURL, cl.Realm)
+					http.Redirect(w, r, tokenURL, http.StatusFound)
+					return
+				}
 			}
 
 			userRoles, err := introspectTokenRoles(accessToken, cl.ClientID)
