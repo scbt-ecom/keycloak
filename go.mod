@@ -6,6 +6,7 @@ require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/gorilla/mux v1.8.1
 	github.com/lestrrat-go/jwx/v2 v2.1.4
+	github.com/scbt-ecom/keycloak v1.9.33
 	github.com/scbt-ecom/slogging v0.0.2
 	github.com/tidwall/gjson v1.18.0
 )

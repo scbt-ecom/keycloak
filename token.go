@@ -184,3 +184,43 @@ func IsTokenExpired(token string) (bool, error) {
 		return false, nil
 	}
 }
+
+func (cl *Client) RefreshToken(refreshToken string) (*tokenResponseData, error) {
+	if refreshToken == "" {
+		return nil, errors.New("empty refresh token")
+	}
+
+	form := url.Values{}
+	form.Set("client_id", cl.ClientID)
+	form.Set("grant_type", "refresh_token")
+	form.Set("refresh_token", refreshToken)
+
+	req, err := http.NewRequest(
+		http.MethodPost,
+		fmt.Sprintf("%s/realms/%s/protocol/openid-connect/token", cl.BaseURL, cl.Realm),
+		strings.NewReader(form.Encode()),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create refresh request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute refresh request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("refresh token failed with status %d: %s", resp.StatusCode, string(body))
+	}
+
+	var tokenData tokenResponseData
+	if err := json.NewDecoder(resp.Body).Decode(&tokenData); err != nil {
+		return nil, fmt.Errorf("failed to decode refresh response: %w", err)
+	}
+
+	return &tokenData, nil
+}

@@ -75,6 +75,8 @@ github.com/samber/slog-graylog/v2 v2.7.0 h1:28jMsQ+wt/m4ybPWZRjVUIHN/j9PLbJK67Ne
 github.com/samber/slog-graylog/v2 v2.7.0/go.mod h1:HP/O4JXPM0+Es8HIfLYVn44nR93G0UgJ4apkSgXEpic=
 github.com/samber/slog-multi v1.2.1 h1:MRVc6JxvGiZ+ubyANneZkMREAFAykoW0CACJZagT7so=
 github.com/samber/slog-multi v1.2.1/go.mod h1:uLAvHpGqbYgX4FSL0p1ZwoLuveIAJvBECtE07XmYvFo=
+github.com/scbt-ecom/keycloak v1.9.33 h1:Tu0btowvkgAOkZrO/WYzCxn8NYIyoSGxDqkLUD37o74=
+github.com/scbt-ecom/keycloak v1.9.33/go.mod h1:aG6BGw/lRQeuaVPF95XgrnOF/hRWOmx5npMlSS2FyjQ=
 github.com/scbt-ecom/slogging v0.0.2 h1:KBMmWuaI4eoptxpOHld7hMAKAIlEVTN06FTXbnkN9xw=
 github.com/scbt-ecom/slogging v0.0.2/go.mod h1:oywX9+uVXlUcOzhQ+GF4kynKCRZ566ubmR48Fz0TxJw=
 github.com/segmentio/asm v1.2.0 h1:9BQrFxC+YOHJlTlHGkTrFWf59nbL3XnCoFLTwDCI7ys=
