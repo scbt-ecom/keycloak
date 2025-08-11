@@ -19,7 +19,7 @@ func main() {
 
 	session := cl.NewSession(keycloak.Credentials{
 		ClientID:     "backendecomReserveAccount",
-		ClientSecret: "65aIcF4ubFDnbZbgLfIuCiTqE1b1ttgP",
+		ClientSecret: "examplesecret",
 	})
 
 	svc := Service{
